@@ -1,0 +1,558 @@
+---
+title: "Tidyverse"
+author: "Glebus Aleksandr"
+date: "2024-09-13"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#install.packages("tidyverse")
+library(tidyverse) # Загрузка библиотеки tidyverse
+```
+
+## Принципы tidy data
+
+1.  Каждая переменная — отдельный столбец.
+2.  Каждое наблюдение — отдельная строка.
+3.  Каждое значение — отдельная ячейка.
+
+> Подробнее по
+> [ссылке](https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html)
+
+Представьте, что вам присывают данные, а там
+
+```{r}
+# Создадим пример не tidy data
+df_messy <- data.frame(
+  Name = c("Павел Кариотипов", "Хромосомова", "Геннадий Хромосомов", "Дарвинина Е.", "Boris"),
+  Age_Weight = c("25 years, 60kg", "30 год, 70кг", "20yrs 55 кг", "35 year 80kg", "40, 65 кило"),
+  Height = c("170cm", "175cm", "1,8", "170cм", "165 cм"),
+  Gender = c("Female", "Male", "male", "MALE", "Femily"),
+  Blood_Pressure_1 = c("120/80mmHg", "130 на 85", "125 / 75 мм рт. ст.", "120/80", "110 на 70 mmHg"),
+  Blood_Pressure_2 = c("110/90mmHg", "130 на 85", "125 / 75 мм рт. ст.", "120/80", "100 на 80 mmHg")
+)
+
+# Выводим результат
+print(df_messy)
+```
+
+## Основные пакеты tidyverse
+
+-   [tibble](https://tibble.tidyverse.org): Модернизированные датафреймы
+-   [readr](https://readr.tidyverse.org): Чтение данных
+-   [dplyr](https://dplyr.tidyverse.org): Манипуляция данными
+-   [tidyr](https://tidyr.tidyverse.org): Преобразование форматов данных
+-   [ggplot2](https://ggplot2.tidyverse.org): Визуализация данных
+-   [purrr](https://purrr.tidyverse.org): Функциональное
+    программирование
+
+## Tibble: Модернизированные датафреймы
+
+Tibble сохраняет поведение стандартных датафреймов, но улучшает их в
+части отображения и работы с большими таблицами.
+
+-   tibble никогда не меняет типы входных данных
+-   tibble никогда не настраивает имена переменных
+-   tibble никогда не печатает все строки
+-   отображает tibble длиной 1 как tibble а не как вектор
+
+> Подробнее по
+> [ссылке](https://www.r-bloggers.com/2018/09/introduction-to-tibbles/)
+
+Сгенерируем базовый data.frame и tibble для сравнения
+
+```{r}
+n <- 100  # Количество записей
+set.seed(42) # Зерно для случайной генерации
+
+# Генерация стандартного data.frame
+df <- data.frame(
+  `Person ID` = paste0("Person_", sprintf("%04d", 1:n)), # ID
+  Height = round(rnorm(n, mean = 170, sd = 10)), # Рост в см
+  Weight = round(rnorm(n, mean = 70, sd = 15)), # Вес в кг
+  Age = sample(18:80, n, replace = TRUE), # Возраст
+  Gender = sample(c("Male", "Female"), n, replace = TRUE) # Пол
+)
+
+# Генерация tibble
+tf <- tibble(
+  `Person ID` = paste0("Person_", sprintf("%04d", 1:n)), # ID
+  Height = round(rnorm(n, mean = 170, sd = 10)), # Рост в см
+  Weight = round(rnorm(n, mean = 70, sd = 15)), # Вес в кг
+  Age = sample(18:80, n, replace = TRUE), # Возраст
+  Gender = sample(c("Male", "Female"), n, replace = TRUE) # Пол
+)
+
+head(df) # Вывод data.frame
+head(tf) # Вывод tibble
+```
+
+Видно, что data.frame изменил название первой колонки tibble не
+отображает столбец индексации
+
+```{r}
+df[,1]
+tf[,1]
+```
+
+data.frame вернул вектор в то время как tibble вернул tibble
+
+C tibble можно обращаться так же как и с обычным data.frame
+
+> as_tibble() Превратить data.frame в tibble
+
+## readr: Чтение и запись данных
+
+На смену семейству функций чтения, таких как
+
+-   read.csv()
+-   read.csv2()
+-   read.table()
+-   ...
+
+пришли функции чтения
+
+-   read_csv()
+-   read_csv2()
+-   read_table()
+-   ...
+
+```{r}
+patients <- read_csv2("data/patients.csv")
+head(patients)
+```
+
+Можно взглянуть на данные с помощью стандартной str()
+
+```{r}
+str(patients)
+```
+
+Или с помощью glimpse()
+
+```{r}
+glimpse(patients)
+```
+
+На смену семейству функций записи, таких как
+
+-   write.csv()
+-   write.csv2()
+-   write.table()
+-   ...
+
+пришли функции чтения
+
+-   write_csv()
+-   write_csv2()
+-   write_table()
+-   ...
+
+```{r}
+write_excel_csv2(patients, "data/modified_patients.csv")
+```
+
+> Для работы с excel:
+>
+> -   readxl::read_excel()
+>
+> -   xlsx::write.xlsx()
+>
+> -   openxlsx::write.xlsx()
+>
+> Для работы с googlesheets:
+>
+> -   googlesheets4::read_sheet()
+
+## dplyr: Манипуляция данными
+
+-   select: выбор колонок
+-   slice: выбор строк
+-   filter: фильтрация данных
+-   arrange: сортировка данных
+-   mutate: cоздание новых колонок
+
+```{r}
+select(data, 1, 2)
+select(data, Person_ID, Height)
+```
+
+Дают одинаковый результат
+
+### Пайп
+
+"%\>%" - это пайп (Ctrl + Shift + M)
+
+```{r}
+data %>% select(Person_ID, Height)
+```
+
+Давайте сравним код без использования пайпа
+
+```{r}
+data_1 <- select(data, Person_ID, Height, Weight)
+data_2 <- mutate(data_1, BMI = Weight / ((Height / 100) ** 2))
+data_3 <- filter(data_2, BMI > 24, Height < 171)
+data_4 <- arrange(data_3, Height)
+head(data_4)
+```
+
+И с использованием пайпа
+
+```{r}
+data %>%  
+  select(Person_ID, Height, Weight) %>% 
+  mutate(BMI = Weight / ((Height / 100) ** 2)) %>% 
+  filter(BMI > 24, Height < 171) %>% 
+  arrange(desc(Height))
+```
+
+Здесь лучше видна идеалогия пайпа, но так редко пишут
+
+```{r}
+data %>% filter(Height > 100) %>% select(Person_ID) -> selected_persons
+```
+
+Можно вот так, это позволяет читать код быстрее
+
+```{r}
+selected_persons <- data %>% filter(Height > 100) %>% select(Person_ID) 
+```
+
+Но обычно вот так, это по прежнему "одна строка" кода
+
+```{r}
+selected_persons <- data %>%
+  filter(Height > 100) %>% 
+  select(-Person_ID)
+```
+
+Оператор %in% можно использовать для выбора из списка
+
+```{r}
+data %>%
+  filter(Person_ID %in% c("Person_0002", "Person_0005", "Person_0010"))
+```
+
+Изменить данные можно с помощью функций mutate и конструкции if_else,
+если мы хотим выбрать данные по условию. Добавим некоторым записям в
+столбце Weight значения NA
+
+```{r}
+data_with_na <- data %>%
+  mutate(
+    Weight = if_else(Person_ID %in% c("Person_0002", "Person_0005", "Person_0010"), NA, Weight)
+  )
+head(data_with_na)
+```
+
+Можно использовать разные функции для фильтрации или комбинации условий
+
+```{r}
+data_with_na %>% 
+  filter(is.na(Weight))
+```
+
+Чтобы выбрать определенные строчки по значению используется функция
+slice
+
+```{r}
+data %>% slice(2:5, 7, 10)
+```
+
+Семейство функций slice добавляют дополнительную фунциональность, по
+сравнению с обычным индексированием
+
+```{r}
+data %>% slice_sample(n=8) # выбрать 8 случайных рядов
+data %>% slice_min(prop=0.2, Height) # выбрать 20% наименьших
+data %>% slice_max(prop=0.2, Height) # выбрать 20% наибольших
+data %>% slice_head(n=5) # выбрать первых 5 
+data %>% slice_tail(n=5) # выбрать последних 5
+```
+
+Рассмотрим датафрейм Life_expectancy
+
+```{r}
+Life_expectancy <- read_csv("data/Life expectancy.csv")
+```
+
+dplyr также предлагает дополнение к if else выражением - case when можно
+использовать сразу несколько условий и действий
+
+Разделим уровень счастья на 3 уровня и запишем в новую переменную
+
+```{r}
+Life_expectancy <- Life_expectancy %>% 
+  mutate(Happiness_Score_level = case_when(
+    Happiness_Score < 5 ~ "Low",
+    between(Happiness_Score, 5, 6) ~ "Medium",
+    Happiness_Score > 6 ~ "High",
+    TRUE ~ as.character(Happiness_Score) # Нужно, если наши значения не покрыты условиями
+  ))
+Life_expectancy %>% glimpse()
+```
+
+### Группировка и агрегация данных
+
+Можно делать группировку на основе разных переменных К примеру давайте
+используем Happiness_Score_level в качестве группирующего фактора
+
+```{r}
+Life_expectancy_grouped <- Life_expectancy %>% group_by(Happiness_Score_level)
+Life_expectancy_grouped
+```
+
+Мы видим такой текст Groups: Happiness_Score_level [3]
+
+Это означает, что Happiness_Score_level - группирующая переменная
+
+Зачем это нужно?
+
+Мы можем рассчитать статистики для каждой группы
+
+```{r}
+Life_expectancy_grouped %>% 
+  summarise(avg=mean(Life_Expectancy_Men))
+```
+
+Можно доработать порядок
+
+Можно рассчитать количество наблюдений в каждой группе
+
+```{r}
+Life_expectancy_grouped %>% tally()
+```
+
+Можно сделать группы и без предварительной подготовки
+
+Внутри group_by можно проводить некоторые вычисления
+
+```{r}
+Happiness_breaks <- c(0, 5, 6, Inf)
+Life_expectancy %>%
+  group_by(Happiness_Score_breaks = cut(Happiness_Score, breaks=Happiness_breaks)) %>%
+  tally()
+```
+
+Дополнительная информация о группах
+
+```{r}
+Life_expectancy_grouped %>% group_keys()  # названия групп
+Life_expectancy_grouped %>% group_indices() # принадлежность наблюдений к группам
+Life_expectancy_grouped %>% group_rows() # номера строк принадлежащие группе
+Life_expectancy_grouped %>% group_vars() # какие переменные использовались для группировки
+```
+
+Мы не ограничены одной переменной, можно добавлять/убирать их
+
+```{r}
+Life_expectancy_grouped_2 <- Life_expectancy_grouped %>% 
+  group_by(Men = cut(Life_Expectancy_Men,breaks=c(0,60,70,80,Inf)),.add = T)
+
+Life_expectancy_grouped_2 %>% tally()
+Life_expectancy_grouped_2 %>% group_vars()
+```
+
+Чтобы убрать
+
+```{r}
+Life_expectancy_grouped_2 %>% ungroup() %>% tally() # убрать всю группировку
+Life_expectancy_grouped_2 %>% ungroup(Men) %>% tally() # убрать один фактор
+```
+
+Что можно делать с группами? Расчет статистик
+
+```{r}
+Life_expectancy_grouped_2 %>% 
+  summarise(mean=mean(Life_Expectancy_Men, na.rm=T),
+            median = median(Life_Expectancy_Men, na.rm=T),
+            var = var(Life_Expectancy_Men, na.rm=T),
+            n = n(),
+            )
+```
+
+Slice работает с учётом группировки.
+
+Эта команда выберет первый образец из каждой группы
+
+```{r}
+Life_expectancy_grouped_2 %>% slice(1)
+```
+
+Mutate работает как обычно, если не используются суммирующие функции
+
+Когда мы используем такие (например, mean()) в результате мы получим
+среднее для каждой группы
+
+```{r}
+Life_expectancy_grouped_2 %>% mutate(dif_mean = Life_Expectancy_Men - mean(Life_Expectancy_Men))
+```
+
+Та же идея с filter() Команда выведет страны с наибольшей
+продолжительностью жизни мужчин в каждой группе
+
+```{r}
+Life_expectancy_grouped_2 %>% 
+  filter(Life_Expectancy_Men == max(Life_Expectancy_Men))
+```
+
+### wide data, long data
+
+### Объединение данных
+
+```{r}
+#install.packages("nycflights13")
+library(nycflights13) # отсюда возьмем примеры
+```
+
+Объединим 2 таблицы
+
+```{r}
+flights # таблица с полётами 
+airlines # таблица с названием авиакомпании
+```
+
+Начнём с простого объединения
+
+```{r}
+flights2 <- flights %>% select(year:day, hour, origin, dest, tailnum, carrier)
+flights2 %>% 
+  left_join(airlines)
+```
+
+По умолчанию, все совпадаюшие колонки используются для объединения
+
+```{r}
+weather # таблица с погодой
+flights2 %>% left_join(weather)
+```
+
+Однако, если у нас есть одинаковые колонки, но разные данные\
+мы должны указать какие колонки использовать для объединения
+
+```{r}
+planes # информация о самолётах
+```
+
+таблица содержит год производства, а не год полёта
+
+```{r}
+left_join(flights2, planes, by = "tailnum")
+```
+
+Наоборот, иногда одинаковая информация содержится в разных колонках
+
+```{r}
+airports # информация об аэропортах
+flights2 %>% left_join(airports, c("dest" = "faa"))
+```
+
+Есть несколько типов объединений
+
+Мы можем объединить данные так, чтобы сохранить наблюдения, которые есть
+в обеих таблицах
+
+```{r}
+df1 <- tibble(id = c(1, 2), 
+              y = 2:1)
+df1
+df2 <- tibble(id = c(3, 1), 
+              a = 10, 
+              b = "a")
+df2
+inner_join(df1,df2) # одно наблюдение с id=1
+```
+
+можно сохранить все наблюдения из первого датасета We may want to keep
+all observations from the first dataset Например, все данные о полётах,
+даже без дополнительной информации об аэропортах
+
+```{r}
+left_join(df1,df2)
+```
+
+Наоборот, можно сохранить все данные из второй таблицы
+
+```{r}
+right_join(df1,df2)
+```
+
+Это аналог left_join(df2, df1) но различны порядком колонок
+
+```{r}
+left_join(df2, df1)
+```
+
+Если цель сохранить как можно больше значений, то лучше использовать
+full_join()
+
+```{r}
+full_join(df1, df2)
+```
+
+Внимание! Если совпедение не уникально, то могут возникать дубликаты
+
+```{r}
+df1 <- tibble(x = c(1, 1, 2), y = 1:3)
+df1
+df2 <- tibble(x = c(1, 1, 2), z = c("a", "b", "a"))
+df2
+df1 %>% left_join(df2)
+```
+
+Ещё есть несколько команд для фильтрации объединением. Как это работает?
+semi_join() вернёт все наблюдения из x с совпадением в таблице y.
+
+```{r}
+flights %>% 
+  semi_join(planes, by = "tailnum") %>% 
+  count(tailnum, sort = TRUE)
+```
+
+Все tailnums представлены в planes По сравнению с left_join(), здесь не
+происходит дубликаций
+
+anti_join() возвращает наблюдения из x без совпадения в y
+
+```{r}
+flights %>% 
+  semi_join(planes, by = "tailnum") %>% 
+  count(tailnum, sort = TRUE)
+```
+
+Так можно, например, сделать проверку пропущенных значений в planes
+
+Если у нас одинаковые переменные в двух таблицах, то можно использовать
+такие функции для объединения рядов
+
+```{r}
+(df1 <- tibble(x = 1:2, y = c(1L, 1L)))
+(df2 <- tibble(x = 1:2, y = 1:2))
+```
+
+intersect(x, y): наблюдения, которые представлены в двух таблицах return
+only observations in both x and y union(x, y): уникальные наблюдения
+return unique observations in x and y setdiff(x, y): наблюдения, которые
+есть в x, но не в y.
+
+We have 4 different cases for our 2 tables
+
+```{r}
+intersect(df1, df2)
+
+union(df1, df2)
+
+setdiff(df1, df2)
+
+setdiff(df2, df1)
+```
+
+```{r}
+ls
+```

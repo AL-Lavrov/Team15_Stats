@@ -1,0 +1,199 @@
+---
+title: "Введение в RMD"
+author: "suleymanovef@gmail.com"
+date: "2024-09-17"
+output:
+  html_document:
+    #css: styles.css
+    #keep_md: true
+    #highlight: zenburn #default, tango, pygments, kate, monochrome, espresso, zenburn, haddock, breezedark, textmate
+    #theme: cosmo #default, bootstrap, cerulean, cosmo, darkly, flatly, journal, lumen, paper, readable, sandstone, simplex, spacelab, united, and yeti
+    #fig_width: 7
+    #fig_height: 6
+    #fig_caption: true
+    #toc: TRUE
+    #toc_depth: 4
+    #toc_float: 
+    #  collapsed: yes
+    #  smooth_scroll: no
+    #number_sections: true
+#editor_options:
+#  chunk_output_type: console
+---
+
+# Введение
+
+
+Markdown — это облегчённый язык разметки, разработанный в 2004 году Джоном Грубером совместно с Аароном Шварцем.
+
+
+
+## Красивая схема
+
+![Процесс генерации отчета](rmarkdownflow.png)
+
+Можно также использовать веб-ссылки
+
+![Горы](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Matterhorn_Riffelsee_2005-06-11.jpg/1024px-Matterhorn_Riffelsee_2005-06-11.jpg){width="50%," height="50%"}
+
+#Если вы знаете точные размеры изображения, можно задать их конкретными размерами, однако есть риск немного растянуть изображение ![Горы](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Matterhorn_Riffelsee_2005-06-11.jpg/1024px-Matterhorn_Riffelsee_2005-06-11.jpg){width="800" height="600" style="display: block; margin: 0 auto"}
+
+```{r, echo=FALSE, out.width="50%", out.height="50%", fig.cap="Горы"}
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Matterhorn_Riffelsee_2005-06-11.jpg/1024px-Matterhorn_Riffelsee_2005-06-11.jpg")
+```
+
+```{r, echo=FALSE, out.width=400, out.height=300, fig.cap="Горы", fig.align='center'}
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Matterhorn_Riffelsee_2005-06-11.jpg/1024px-Matterhorn_Riffelsee_2005-06-11.jpg")
+```
+
+```{r setup, include=FALSE}
+# Область выполнения кода. Здесь можно писать код как на R, так и на других языках программирования. 
+
+knitr::opts_chunk$set(echo = TRUE) # Задает настройки для всех чанков - то есть глобальные настройки. 
+
+# Базовые настройки чанка. Могут быть настроены глобально, но также и для отдельных чанков внутри {}
+
+# eval - выполнять ли чанк
+# echo - показывать код чанков
+# warning  - показывать предупреждения
+# message - показывать ли сообщения
+# results - показывать или скрывать результаты работы чанков (варианты - 'show'|'hide')
+```
+
+# Basic RMD file content
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+# Давайте сделаем наш первый чанк
+
+```{r}
+# Чем его заполнить?
+```
+
+```         
+# Это тоже чанк?
+```
+
+# Пробелы это важно...
+
+Мы студенты ИБ 2024-2025! Мы студенты ИБ 2024-2025!\
+Мы студенты ИБ 2024-2025!
+
+Мы студенты ИБ 2024-2025!
+
+# Разберемся с заголовком. Это заголовок!
+
+## А это уже подзаголовок!
+
+###А это подзаголовок подзаголовка! \#### А это подзаголовок подзаголовка подзаголовка! \##### Я думаю, суть вы уже уловили
+
+# Поиграем в ворд
+
+*Этот текст будет курсивом*\
+*Этот текст будет курсивом*\
+**Этот текст будет жирным**\
+**Этот текст будет жирным**\
+~~Этот текст будет зачёркнутым~~
+
+# Оставим заметки
+
+> Напишу здесь что-то важное, чтобы не забыть
+
+> Если хочется сделать заметку побольше, то просто продолжите на следующей строке. А если нужно разделить строки, то
+>
+> Просто оставьте одну строку незаполненной
+
+# Сделаем список...
+
+## Наших предметов на курсе
+
+-   Дискретная математика
+-   Python
+-   Статистика & R
+-   Командная строка
+
+## А теперь составим из них расписание
+
+1.  Дискретная математика
+2.  Статистика & R
+    1.  Статистика
+    2.  R
+3.  Python
+4.  Командная строка
+
+# Немного формул
+
+$P\left( x \right) = \frac{{e^{ - \lambda } \lambda ^x }}{{x!}}$
+
+# Чуть-чуть порисуем
+
+На примере это чанка предлагаю пофиксить вывод таким образом, чтобы отчет выглядит красиво.
+
+```{r graph}
+library(ggplot2) #graph
+library(tibble) #rownames_to_column
+library(dplyr) #table manipulation (mutate)
+library(ggrepel) #geom_label_repel
+
+# Create additional column
+dataset <- mtcars %>%
+  rownames_to_column(var='Model') %>%
+  mutate(NUMBER = ifelse(grepl("[0-9]", Model), 'YES', 'NO')) 
+  
+# Create graph
+ggplot(dataset, aes(x= mpg, y=hp, color=NUMBER, label=Model))+
+  geom_point(size=2) +
+  geom_smooth(method='lm', alpha = 0.3) +
+  theme_bw() + 
+  theme(legend.position='none') +
+  geom_label_repel(aes(label = Model),
+                   box.padding   = 0.35, 
+                   label.padding = 0.25,
+                   point.padding = 0.4)
+```
+
+# Код внутри текста
+
+Представим, что у нас есть некоторые переменные, с которыми мы работаем. Сейчас мы зададим их явно, но они вполне могут вычисляться в процессе других расчетов.
+
+```{r}
+a <- 8
+b <- rnorm(10, mean=6, sd=1.2)
+```
+
+И вдруг вам необходимо описать ваши расчеты в тексте. Однако как избежать использования чисел, а вместо них использовать переменные? Для этого не обязательно создавать новый чанк, достаточно просто вызвать эти переменные в тексте с помощью --\> `r round(a/mean(b), 2)`. В финальном отчете будет отображаться результат выполнения чанка.
+
+# Горячие клавиши
+
+| Действие                          | Windows/Linux    | Mac                |
+|-----------------------------------|------------------|--------------------|
+| Сформировать (knit) документ      | Ctrl + Shift + K | Cmd + Shift + K    |
+| Сделать новый чанк                | Ctrl + Alt + I   | Cmd + Option + I   |
+| Выполнить текущий чанк            | Ctrl + Alt + C   | Cmd + Option + C   |
+| Показать шорткаты (очень полезно) | Alt + Shift + K  | Option + Shift + K |
+| Удалить текущую строку            | Ctrl + D         | Cmd + D            |
+| Закомментить/раскомментить строку | Ctrl + Shift + C | Cmd + Shift + C    |
+
+# Полезные ссылки
+
+-   R Markdown [Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+-   [RMD overview](https://bookdown.org/yihui/rmarkdown/html-document.html#appearance-and-style)
+-   [Introduction to knitr](https://sachsmc.github.io/knit-git-markr-guide/knitr/knit.html)

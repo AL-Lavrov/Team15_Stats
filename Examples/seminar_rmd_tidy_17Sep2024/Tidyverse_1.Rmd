@@ -1,0 +1,443 @@
+---
+title: "Tidyverse"
+author: "Glebus Aleksandr"
+date: "2024-09-13"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#install.packages("tidyverse")
+library(tidyverse) # Загрузка библиотеки tidyverse
+```
+
+## Принципы tidy data
+
+1.  Каждая переменная — отдельный столбец.
+2.  Каждое наблюдение — отдельная строка.
+3.  Каждое значение — отдельная ячейка.
+
+> Подробнее по
+> [ссылке](https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html)
+
+Представьте, что вам присывают данные, а там
+
+```{r echo=FALSE}
+read_rds("data/df_messy.rds")
+```
+
+## Основные пакеты tidyverse
+
+-   [tibble](https://tibble.tidyverse.org): Модернизированные датафреймы
+-   [readr](https://readr.tidyverse.org): Чтение данных
+-   [dplyr](https://dplyr.tidyverse.org): Манипуляция данными
+-   [tidyr](https://tidyr.tidyverse.org): Преобразование форматов данных
+-   [ggplot2](https://ggplot2.tidyverse.org): Визуализация данных
+-   [purrr](https://purrr.tidyverse.org): Функциональное
+    программирование
+
+## tibble: Модернизированные датафреймы
+
+Tibble сохраняет поведение стандартных датафреймов, но улучшает их в
+части отображения и работы с большими таблицами.
+
+-   tibble никогда не меняет типы входных данных
+-   tibble никогда не настраивает имена переменных
+-   tibble никогда не печатает все строки
+-   отображает tibble длиной 1 как tibble а не как вектор
+
+> Подробнее по
+> [ссылке](https://www.r-bloggers.com/2018/09/introduction-to-tibbles/)
+> и по еще одной
+> [ссылке](https://jtr13.github.io/cc21fall1/tibble-vs.-dataframe.html)
+
+Сгенерируем базовый **data.frame** и **tibble** для сравнения
+
+```{r}
+n <- 100  # Количество записей
+set.seed(42) # Зерно для случайной генерации
+
+# Генерация стандартного data.frame
+df <- data.frame(
+  `Person ID` = paste0("Person_", sprintf("%04d", 1:n)), # ID
+  Height = round(rnorm(n, mean = 170, sd = 10)), # Рост в см
+  Weight = round(rnorm(n, mean = 70, sd = 15)), # Вес в кг
+  Age = sample(18:80, n, replace = TRUE), # Возраст
+  Gender = sample(c("Male", "Female"), n, replace = TRUE) # Пол
+)
+
+# Генерация tibble
+tf <- tibble(
+  `Person ID` = paste0("Person_", sprintf("%04d", 1:n)), # ID
+  Height = round(rnorm(n, mean = 170, sd = 10)), # Рост в см
+  Weight = round(rnorm(n, mean = 70, sd = 15)), # Вес в кг
+  Age = sample(18:80, n, replace = TRUE), # Возраст
+  Gender = sample(c("Male", "Female"), n, replace = TRUE) # Пол
+)
+
+head(df) # Вывод data.frame
+head(tf) # Вывод tibble
+```
+
+Видно, что **data.frame** изменил название первой колонки, **tibble** не
+отображает столбец индексации
+
+```{r}
+df[,1]
+tf[,1]
+```
+
+**data.frame** вернул вектор в то время как **tibble** вернул tibble
+
+C **tibble** можно обращаться так же как и с обычным **data.frame**
+
+> **as_tibble()** Превратить data.frame в tibble
+
+## readr: Чтение и запись данных
+
+На смену семейству функций чтения, таких как
+
+-   read.csv()
+-   read.csv2()
+-   read.table()
+-   ...
+
+пришли функции чтения
+
+-   read_csv()
+-   read_csv2()
+-   read_table()
+-   ...
+
+```{r}
+patients <- read_csv2("data/patients.csv")
+head(patients)
+```
+
+Можно взглянуть на данные с помощью стандартной **str()**
+
+```{r}
+str(patients)
+```
+
+Или с помощью **glimpse()**
+
+```{r}
+glimpse(patients)
+```
+
+На смену семейству функций записи, таких как
+
+-   **write.csv()**
+-   **write.csv2()**
+-   **write.table()**
+-   ...
+
+пришли функции записи
+
+-   **write_csv()**
+-   **write_csv2()**
+-   **write_table()**
+-   ...
+
+```{r}
+write_excel_csv2(patients, "data/modified_patients.csv")
+```
+
+> Для работы с excel:
+>
+> -   **readxl::read_excel()**
+>
+> -   **xlsx::write.xlsx()**
+>
+> -   **openxlsx::write.xlsx()**
+>
+> Для работы с googlesheets:
+>
+> -   **googlesheets4::read_sheet()**
+
+## dplyr: Манипуляция данными
+
+Основные функции:
+
+-   **select()**: выбор колонок
+-   **slice()**: выбор строк по индексу
+-   **filter()**: выбор строк по условию
+-   **arrange()**: сортировка данных
+-   **mutate()**: cоздание новых колонок
+
+```{r}
+select(patients, 1, 2)
+select(patients, Person_ID, Height)
+```
+
+Дают одинаковый результат
+
+### Пайп
+
+**%\>%** - это пайп (Ctrl + Shift + M)
+
+Пайп берёт результат работы функции и передаёт его на вход в следующую
+функцию
+
+```{r}
+patients %>% select(Person_ID, Height)
+```
+
+Давайте сравним код без использования пайпа
+
+```{r}
+patients_df1 <- select(patients, Person_ID, Height, Weight)
+patients_df2 <- mutate(patients_df1, BMI = Weight / ((Height / 100) ** 2))
+patients_df3 <- filter(patients_df2, BMI > 24, Height < 171)
+patients_df4 <- arrange(patients_df3, Height)
+head(patients_df4)
+```
+
+И с использованием пайпа
+
+```{r}
+patients %>%  
+  select(Person_ID, Height, Weight) %>% 
+  mutate(BMI = Weight / ((Height / 100) ** 2)) %>% 
+  filter(BMI > 24, Height < 171) %>% 
+  arrange(desc(Height))
+```
+
+Здесь лучше видна идеология пайпа, но так редко пишут
+
+```{r}
+patients %>% filter(Height > 100) %>% select(Person_ID) -> selected_persons
+```
+
+Можно вот так, это позволяет читать код быстрее
+
+```{r}
+selected_persons <- patients %>% filter(Height > 100) %>% select(Person_ID) 
+```
+
+Но обычно вот так, это по прежнему "одна строка" кода
+
+```{r}
+selected_persons <- patients %>%
+  filter(Height > 100) %>%
+  select(Person_ID)
+```
+
+### Выбор столбцов
+
+Сочетание **select()** и **where()** можно использовать, чтобы выбрать
+только числовые переменные
+
+"-" значит, что нужно исключить столбец
+
+```{r}
+patients %>% 
+  select(where(is.numeric), -Age)
+```
+
+Иногда удобно выбрать остальные колонки с помощью **everything()**
+
+```{r}
+patients %>% 
+  select(where(is.numeric), everything())
+```
+
+Можно переименовывать при выборе
+
+```{r}
+patients %>% 
+  select(`Weight, kg` = Weight, 
+         `Height, cm` = Height,
+         `Age, years` = Age,
+         everything())
+```
+
+> -   **dplyr::select_if()**
+>
+>     Выбирает столбцы, удовлетворяющие логическому условию
+>
+> -   **tidyselect::contains()**
+>
+>     Выбирает столбцы, имена которых содержат указанную подстроку
+>
+> -   **tidyselect::matches()**
+>
+>     Выбирает столбцы, имена которых соответствуют регулярному
+>     выражению
+>
+> -   **tidyselect::starts_with()**
+>
+>     Выбирает столбцы, имена которых начинаются с указанной подстроки
+>
+> -   **tidyselect::ends_with()**
+>
+>     Выбирает столбцы, имена которых заканчиваются на указанную
+>     подстроку
+>
+> -   **tidyselect::all_of()**
+>
+>     Выбирает столбцы, имена которых точно соответствуют списку имен
+>
+> -   **tidyselect::any_of()**
+>
+>     Выбирает столбцы, имена которых присутствуют в указанном списке
+
+### Выбор строк
+
+Чтобы выбрать определенные строчки по значению используется функция
+**slice()**
+
+```{r}
+patients %>% slice(2:5, 7, 10)
+```
+
+Семейство функций **slice()** добавляют дополнительную фунциональность,
+по сравнению с обычным индексированием
+
+```{r}
+patients %>% slice_sample(n=8) # выбрать 8 случайных рядов
+patients %>% slice_min(prop=0.2, Height) # выбрать 20% наименьших
+patients %>% slice_max(prop=0.2, Height) # выбрать 20% наибольших
+patients %>% slice_head(n=5) # выбрать первых 5 
+patients %>% slice_tail(n=5) # выбрать последних 5
+```
+
+Чтобы выбрать строки по условию используется **filter()**
+
+```{r}
+patients %>% 
+  filter(Age > 50)
+```
+
+Сочетание **filter()** и **between()** можно использовать для того,
+чтобы выбрать диапазон
+
+```{r}
+patients %>%
+  filter(between(Height, 185, 190))
+```
+
+Оператор **%in%** можно использовать для выбора из списка
+
+```{r}
+patients %>%
+  filter(Person_ID %in% c("Person_0002", "Person_0005", "Person_0010"))
+```
+
+Можно использовать разные функции для фильтрации или комбинации условий
+
+```{r}
+patients %>% 
+  filter(is.na(Weight))
+```
+
+> -   **dplyr::if_any()**
+>
+>     Фильтрация сразу по нескольким переменным, мягкая
+>
+> -   **dplyr::if_all()**
+>
+>     Фильтрация сразу по нескольким переменным, жесткая
+
+### Создание новых столбцов
+
+Для создания новых столбцов используется **mutate()**
+
+Рассмотрим датафрейм Life_expectancy
+
+```{r}
+Life_expectancy <- read_csv("data/Life expectancy.csv")
+Life_expectancy
+```
+
+Повысим уровень счастья
+
+```{r}
+Life_expectancy %>% # перезаписывать не будем
+  mutate(Happiness_Score = Happiness_Score + 1,
+         Happiness_Score_level = "better than before")
+```
+
+\
+С помощью **case_when** можно использовать сразу несколько условий и
+действий
+
+Разделим уровень счастья на 3 уровня и запишем в новую переменную
+
+```{r}
+Life_expectancy <- Life_expectancy %>% 
+  mutate(Happiness_Score_level = case_when(
+    Happiness_Score < 5 ~ "Low",
+    between(Happiness_Score, 5, 6) ~ "Medium",
+    Happiness_Score > 6 ~ "High",
+    TRUE ~ as.character(Happiness_Score) # Нужно, если наши значения не покрыты условиями
+  ))
+Life_expectancy %>% glimpse()
+```
+
+Изменим тип переменной Happiness_Score_level на фактор
+
+```{r}
+Life_expectancy <- Life_expectancy %>% 
+  mutate(Happiness_Score_level = as.factor(Happiness_Score_level))
+Life_expectancy %>% glimpse()
+```
+
+Удалить переменную
+
+```{r}
+Life_expectancy %>%
+  mutate(Happiness_Score_level = NULL)
+```
+
+Добавим в данные отсутствующие значения в Happiness_Score для
+тренировки. Тип переменной изменился
+
+```{r}
+set.seed(42) # Для воспроизводимости результата
+Life_expectancy <- Life_expectancy %>% 
+  mutate(Happiness_Score = ifelse(runif(n()) < 0.1, "Нет данных", Happiness_Score))
+
+Life_expectancy %>% 
+  filter(Happiness_Score == "Нет данных")
+```
+
+Заменим "Нет данных" на NA, вернем тип **numeric**. Обратите внимание,
+данные обрабатыватся лениво
+
+```{r}
+Life_expectancy <- Life_expectancy %>% 
+  mutate(Happiness_Score = ifelse(Happiness_Score == "Нет данных", NA, Happiness_Score),
+         Happiness_Score = as.numeric(Happiness_Score))
+
+Life_expectancy %>% 
+  filter(is.na(Happiness_Score))
+```
+
+**na.omit** удаляет всю строку, если в ней есть хотя бы один NA
+
+```{r}
+Life_expectancy %>% na.omit() 
+```
+
+Вместо удаления, заменим NA на среднее значение, используя функцию
+**replace_na**
+
+```{r}
+Life_expectancy <- Life_expectancy %>%
+  mutate(Happiness_Score = replace_na(Happiness_Score, mean(Happiness_Score, na.rm = TRUE)))
+
+Life_expectancy %>% 
+  filter(is.na(Happiness_Score))
+```
+
+*end of part 1*
+
+------------------------------------------------------------------------
+
+*start of part 2*
